@@ -1,17 +1,30 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{ __("You're logged in!") }}
-                </div>
-            </div>
-        </div>
-    </div>
-</x-app-layout>
+@section('content')
+<div class="p-6">
+
+    <h1 class="mb-4 text-2xl font-bold">Selamat datang, {{ $user->name }}</h1>
+
+    @if ($level === 'admin')
+        <p>Ini tampilan khusus untuk <strong>Admin</strong>.</p>
+        {{-- Bisa include komponen admin --}}
+        @include('partials.admin')
+
+    @elseif ($bidang === 'Kesmas')
+        <p>Ini tampilan untuk bidang <strong>Kesmas</strong>.</p>
+        @include('partials.kesmas')
+
+    @elseif ($bidang === 'P2P')
+        <p>Ini tampilan untuk bidang <strong>P2P</strong>.</p>
+        @include('partials.p2p')
+
+    @elseif ($bidang === 'Progsi')
+        <p>Ini tampilan untuk bidang <strong>Progsi</strong>.</p>
+        @include('partials.progsi')
+
+    @else
+        <p>Tampilan umum untuk user.</p>
+    @endif
+
+</div>
+@endsection
