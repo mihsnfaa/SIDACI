@@ -1,4 +1,4 @@
-<footer class="py-4 text-sm text-center text-gray-600">
-    <p>&copy; {{ date('Y') }} Dinas Kesehatan Kota Cimahi. All rights reserved.</p>
-    <p class="mt-1">Sistem Informasi Data Cimahi (SIDACI)</p>
+<footer class="py-4 text-xs text-center text-gray-500">
+    © 2025 Dinas Kesehatan Kota Cimahi. All rights reserved. <br>
+    Sistem Informasi Data Dinas Kesehatan Kota Cimahi (SIDACI)
 </footer>

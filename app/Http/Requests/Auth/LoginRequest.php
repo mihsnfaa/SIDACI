@@ -27,27 +27,37 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
+            'username' => 'required|string',
+            'password' => 'required|string',
         ];
     }
+
 
     /**
      * Attempt to authenticate the request's credentials.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function authenticate(): void
+    public function authenticate()
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $credentials = [
+            'username' => $this->username,
+            'password' => $this->password,
+        ];
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'username' => __('auth.failed'),
             ]);
         }
+
+        // FIX penting: pastikan user_id disimpan di sessions table
+        session()->put('user_id', Auth::id()); // optional debug
+        Auth::login(Auth::user()); // 👈 tambahkan ini untuk memastikan user_id tersimpan
 
         RateLimiter::clear($this->throttleKey());
     }
@@ -80,6 +90,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::lower($this->input('username')) . '|' . $this->ip();
     }
 }

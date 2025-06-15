@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'SIDACI') }}</title>
+    <title>@yield('title', ' Sistem Informasi Data Dinkes Cimahi')</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/logocimahi.png') }}">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -19,6 +20,8 @@
     {{-- Main content area --}}
     <main class="flex items-center justify-center flex-grow">
         @yield('content')
+
+        {{-- Flash messages --}}
     </main>
 
     {{-- Footer --}}
