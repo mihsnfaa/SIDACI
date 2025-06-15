@@ -7,11 +7,10 @@ use App\Models\Documents;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class DocumentsController extends Controller
 {
-    protected $bidangs = ['sekretariat', 'progsi', 'yan-SDK', 'kesmas', 'p2p'];
+    protected $bidangs = ['sekretariat', 'progsi', 'yansdk', 'kesmas', 'p2p'];
 
     // Dashboard untuk admin
     public function adminDashboard()
@@ -32,7 +31,7 @@ class DocumentsController extends Controller
     }
 
     // Halaman per bidang
-    private function loadBidangView($bidang, $view)
+    private function loadBidangView($bidang, $view = null)
     {
         $user = Auth::user();
         if ($user->level !== 'admin' && $user->bidang !== $bidang) {
@@ -40,14 +39,14 @@ class DocumentsController extends Controller
         }
 
         $documents = Documents::with('uploader')->where('bidang', $bidang)->latest()->get();
-        return view($view, compact('documents'));
+        return view($view ?? 'partials.' . $bidang, compact('documents'));
     }
 
-    public function kesmas() { return $this->loadBidangView('kesmas', 'partials.kesmas'); }
-    public function progsi() { return $this->loadBidangView('progsi', 'partials.progsi'); }
-    public function sekretariat() { return $this->loadBidangView('sekretariat', 'partials.sekretariat'); }
-    public function yansdk() { return $this->loadBidangView('yan-SDK', 'partials.yansdk'); }
-    public function p2p() { return $this->loadBidangView('p2p', 'partials.p2p'); }
+    public function kesmas() { return $this->loadBidangView('kesmas'); }
+    public function progsi() { return $this->loadBidangView('progsi'); }
+    public function sekretariat() { return $this->loadBidangView('sekretariat'); }
+    public function yansdk() { return $this->loadBidangView('yansdk'); }
+    public function p2p() { return $this->loadBidangView('p2p'); }
 
     // Upload dokumen
     public function upload(Request $request)
@@ -89,20 +88,39 @@ class DocumentsController extends Controller
         $user = Auth::user();
 
         if ($user->level !== 'admin' && $user->bidang !== $document->bidang) {
-            abort(403, 'Kamu tidak berhak mengunduh dokumen ini.');
+            abort(403);
         }
 
         return response()->download(storage_path('app/public/' . $document->file_path));
     }
 
-    // Lihat detail dokumen
+    // Preview dokumen
+    public function preview($id)
+    {
+        $document = Documents::findOrFail($id);
+        $user = Auth::user();
+
+        if ($user->level !== 'admin' && $user->bidang !== $document->bidang) {
+            abort(403);
+        }
+
+        $file = storage_path('app/public/' . $document->file_path);
+
+        if (!file_exists($file)) {
+            abort(404);
+        }
+
+        return response()->file($file);
+    }
+
+    // Detail dokumen
     public function detail($id)
     {
         $document = Documents::with('uploader', 'updater')->findOrFail($id);
         $user = Auth::user();
 
         if ($user->level !== 'admin' && $user->bidang !== $document->bidang) {
-            abort(403, 'Kamu tidak berhak melihat detail dokumen ini.');
+            abort(403);
         }
 
         return view('details', compact('document'));
@@ -119,8 +137,8 @@ class DocumentsController extends Controller
         $document = Documents::findOrFail($id);
         $user = Auth::user();
 
-        if ($user->level !== 'admin' && $user->id !== $document->uploaded_by) {
-            abort(403, 'Kamu tidak berhak mengedit dokumen ini.');
+        if ($user->level !== 'admin' && $user->bidang !== $document->bidang) {
+            abort(403);
         }
 
         $document->name = $request->nama_file;
@@ -154,8 +172,8 @@ class DocumentsController extends Controller
         $document = Documents::findOrFail($id);
         $user = Auth::user();
 
-        if ($user->level !== 'admin' && $user->id !== $document->uploaded_by) {
-            abort(403, 'Kamu tidak berhak menghapus dokumen ini.');
+        if ($user->level !== 'admin' && $user->bidang !== $document->bidang) {
+            abort(403);
         }
 
         if (Storage::disk('public')->exists($document->file_path)) {
